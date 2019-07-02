@@ -8,7 +8,7 @@ const orange = botconfig.orange;
 module.exports.run = async (bot, message, args) => {
 
 
-//Made by Thrasilias on 10/19/2018
+
 
   if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.reply("No can do.");
   if(args[0] == "help"){
@@ -22,7 +22,7 @@ module.exports.run = async (bot, message, args) => {
   if(!reason) return message.reply("Please supply a reason.");
 
   let muterole = message.guild.roles.find(`name`, "muted");
-  //start of create role
+
   if(!muterole){
     try{
       muterole = await message.guild.createRole({
@@ -40,7 +40,7 @@ module.exports.run = async (bot, message, args) => {
       console.log(e.stack);
     }
   }
-  //end of create role
+ 
   let mutetime = args[1];
   if(!mutetime) return message.reply("You didn't specify a time!");
 
@@ -73,7 +73,7 @@ module.exports.run = async (bot, message, args) => {
   }, ms(mutetime));
 
 
-//end of module
+
 }
 
 module.exports.help = {
