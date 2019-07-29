@@ -1,9 +1,9 @@
 module.exports.run = async (bot, message, args) => {
     var chance = Math.floor(Math.random() * 2)
     if (chance == 0) {
-        message.channel.send('Your coin landed on Heads!');
+        message.channel.send('<:dice:600780475216429057> Your coin landed on Heads!');
     } else {
-        message.channel.send('Your coin ladnded on Tails!');
+        message.channel.send('<:dice:600780475216429057>  Your coin landed on Tails!');
         }
     }
     

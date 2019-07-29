@@ -1,36 +1,39 @@
+const Discord = require('discord.js'); 
 const moment = require('moment');
-const Discord = require('discord.js');
-exports.run = (client, msg, args) => {
-  const embed = new Discord.RichEmbed();
-  embed.addField("Username", `${msg.author.username}#${msg.author.discriminator}`, true)
-          .addField("ID", `${msg.author.id}`, true)
-          .setColor(3447003)
-          .setFooter(' ', ' ')
-          .setThumbnail(`${msg.author.avatarURL}`)
-          .setTimestamp()
-          .setURL(`${msg.author.avatarURL}`)
-          .addField('Currently', `${msg.author.presence.status.toUpperCase()}`, true)
-          .addField('Game', `${msg.author.presence.game === null ? "No Game" : msg.author.presence.game.name}`, true)
-          .addField('Joined Discord', `${moment(msg.author.createdAt).format('MM.DD.YY')}`, true)
-          .addField('Joined Server', `${moment(msg.member.joinedAt).format('MM.DD.YY')}`, true)
-          .addField('Roles', `${msg.member.roles.filter(r => r.name).size}`, true)
-          .addField('Is Bot', `${msg.author.bot.toString().toUpperCase()}`, true)
-      msg.channel.sendEmbed(
-          embed, {
-              disableEveryone: true
-          }
-      );
+
+exports.run = async (client, message, args) => {
+
+    let user;
+
+    if (message.mentions.users.first()) {
+         user = message.mentions.users.first();
+    } else {
+         user = message.author;
+     }
+
+     const member = message.guild.member(user);
+
+     // Forming the Embed
+     const embed = new Discord.RichEmbed() // Use Discord.MessageEmbed if you use the master version
+        .setColor('a07ae4') // I just put random in here, but you can chnage it to anything else.
+        .setThumbnail(user.avatarURL)
+        .setTitle(`${user.username}#${user.discriminator}`)
+        .addField('ID:', `${user.id}`, true)
+        .addField('Nickname:', `${member.nickname !== null ? `${member.nickname}` : 'None'}`, true)
+        .addField('Created at:', `${moment.utc(user.createdAt).format('dddd, MMMM Do YYYY')}`, true)
+        .addField('Joined server:', `${moment.utc(member.joinedAt).format('dddd, MMMM Do YYYY')}`, true)
+        .addField('Status:', `${user.presence.status}`, true)
+        .addField('Game:', `${user.presence.game ? user.presence.game.name : 'None'}`, true)
+        .addField('Roles:', member.roles.map(roles => `${roles.name}`).join(', '), true)
+        .setTimestamp()
+        .setFooter(`Replying to ${message.author.username}#${message.author.discriminator}`)
+
+    // Send the Embed
+    message.channel.send({embed});
+
 }
 
-exports.conf = {
-  enabled: true,
-  guildOnly: false,
-  aliases: [],
-  permLevel: 0
-};
-
-exports.help = {
+module.exports.help = {
   name: 'userinfo',
-  description: 'Displays information about a user.',
-  usage: 'userinfo <@user>'
-};
+  description: 'descrption here'
+}

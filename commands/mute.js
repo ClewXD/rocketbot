@@ -1,44 +1,79 @@
-const Discord = require('discord.js');
-exports.run = (client, message, args) => {
-  let reason = args.slice(1).join(' ');
-  let user = message.mentions.users.first();
-  let logchannel = message.guild.channels.find('name', 'rocketlog');
-  let muteRole = client.guilds.get(message.guild.id).roles.find('name', 'RocketMute');
-  if (!logchannel) return message.reply('I cannot find a logs channel').catch(console.error);
-  if (!muteRole) return message.reply('I cannot find a mute role').catch(console.error);
-  if (reason.length < 1) return message.reply('You must supply a reason for the mute.').catch(console.error);
-  if (message.mentions.users.size < 1) return message.reply('You must mention someone to mute them.').catch(console.error);
-  const embed = new Discord.RichEmbed()
-    .setColor(0x00FFFF)
-    .setTimestamp()
-    .addField('Action:', 'Un/Mute')
-    .addField('User:', `${user.username}#${user.discriminator} (${user.id})`)
-    .addField('Moderator:', `${message.author.username}#${message.author.discriminator}`)
-    .addField('Reason', reason);
-  message.channel.send(':white_check_mark: Success! I\'ve logged the mute in <#593427661054017566>.')
-  return client.channels.get(logchannel.id).send({embed});
-  if (!message.guild.member(client.user).hasPermission('MANAGE_ROLES_OR_PERMISSIONS')) return message.reply(':x: I do not have the correct permissions.').catch(console.error);
-  if (message.guild.member(user).roles.has(muteRole.id)) {
-    message.guild.member(user).removeRole(muteRole).then(() => {
-      client.channels.get(modlog.id).send({embed}).catch(console.error);
-    });
-  } else {
-    message.guild.member(user).addRole(muteRole).then(() => {
-      client.channels.get(modlog.id).send({embed}).catch(console.error);
-    });
+const Discord = require("discord.js");
+const ms = require("ms");
+const botconfig = require("../config.json");
+const red = botconfig.red;
+const green = botconfig.green;
+const orange = botconfig.orange;
+
+module.exports.run = async (bot, message, args) => {
+
+  if(!message.member.hasPermission("ADMINISTRATOR")) return message.reply("This command is for admins only!")
+
+  if(args[0] == "help"){
+    message.reply("Usage: *mute <user> <1s/m/h/d>");
+    return;
+  }
+  let tomute = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
+  if(!tomute) return message.reply("Couldn't find user.");
+  if(tomute.hasPermission("MANAGE_MESSAGES")) return message.reply("Can't mute that person!");
+  let reason = args.slice(2).join(" ");
+  if(!reason) return message.reply("Please supply a reason.");
+
+  let muterole = message.guild.roles.find(`name`, "PurpMute");
+  //start of create role
+  if(!muterole){
+    try{
+      muterole = await message.guild.createRole({
+        name: "RocketMute",
+        color: "#000000",
+        permissions:[]
+      })
+      message.guild.channels.forEach(async (channel, id) => {
+        await channel.overwritePermissions(muterole, {
+          SEND_MESSAGES: false,
+          ADD_REACTIONS: false
+        });
+      });
+    }catch(e){
+      console.log(e.stack);
+    }
+  }
+  //end of create role
+  let mutetime = args[1];
+  if(!mutetime) return message.reply("You didn't specify a time!");
+
+  message.delete().catch(O_o=>{});
+
+  try{
+    await tomute.send(`Oops! You've been muted for ${mutetime}. Sorry! if you want an unmute please DM one of the staff members!`)
+  }catch(e){
+    message.channel.send(`A user has been muted... but their DMs are locked. They will be muted for ${mutetime}`)
   }
 
-};
+  let muteembed = new Discord.RichEmbed()
+  .setDescription(`Mute executed by ${message.author}`)
+  .setColor(orange)
+  .addField("Muted User", tomute)
+  .addField("Muted in", message.channel)
+  .addField("Time", message.createdAt)
+  .addField("Length", mutetime)
+  .addField("Reason", reason);
 
-exports.conf = {
-  enabled: true,
-  guildOnly: false,
-  aliases: ['unmute'],
-  permLevel: 2
-};
+  let incidentschannel = message.guild.channels.find(`name`, "rocketlog");
+  if(!incidentschannel) return message.reply("Please create a incidents channel first!");
+  incidentschannel.send(muteembed);
 
-exports.help = {
-  name: 'mute',
-  description: 'mutes or unmutes a mentioned user',
-  usage: 'mute [mention] [reason]'
-};
+  await(tomute.addRole(muterole.id));
+
+  setTimeout(function(){
+    tomute.removeRole(muterole.id);
+    message.channel.send(`<@${tomute.id}> has been unmuted!`);
+  }, ms(mutetime));
+
+
+//end of module
+}
+
+module.exports.help = {
+  name: "mute"
+}

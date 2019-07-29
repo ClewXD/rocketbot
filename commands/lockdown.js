@@ -4,7 +4,7 @@ exports.run = (client, message, args) => {
   let time = args.join(' ');
   let validUnlocks = ['release', 'unlock'];
   if (!time) return message.reply('You must set a duration for the lockdown in either hours, minutes or seconds');
-
+  message.delete().catch(O_o=>{});
   if (validUnlocks.includes(time)) {
     message.channel.overwritePermissions(message.guild.id, {
       SEND_MESSAGES: null
@@ -20,11 +20,13 @@ exports.run = (client, message, args) => {
       SEND_MESSAGES: false
     }).then(() => {
       message.channel.send(`Channel locked down for ${ms(ms(time), { long:true })}`).then(() => {
+        message.delete().catch(O_o=>{});
 
         client.lockit[message.channel.id] = setTimeout(() => {
           message.channel.overwritePermissions(message.guild.id, {
             SEND_MESSAGES: null
           }).then(message.channel.send('Lockdown lifted.')).catch(console.error);
+          message.delete().catch(O_o=>{});
           delete client.lockit[message.channel.id];
         }, ms(time));
 
@@ -36,13 +38,13 @@ exports.run = (client, message, args) => {
 };
 exports.conf = {
   enabled: true,
-  guildOnly: false,
+  guildOnly: true,
   aliases: ['ld'],
   permLevel: 3
 };
 
 exports.help = {
-  name: 'lockdown',
+  name: 'lock',
   description: 'This will lock a channel down for the set duration, be it in hours, minutes or seconds.',
   usage: 'lockdown <duration>'
 };
