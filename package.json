@@ -18,7 +18,7 @@
     "google": "^2.1.0",
     "google-translate-api": "^2.3.0",
     "google-trends-api": "^4.9.0",
-    "got": "^9.6.0",
+    "got": "^11.8.5",
     "lodash": "^4.17.11",
     "lodash.isboolean": "^3.0.3",
     "moment": "^2.24.0",
